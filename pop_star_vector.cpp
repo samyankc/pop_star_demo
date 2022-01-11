@@ -131,7 +131,7 @@ struct Board : std::vector<Column>
 
     auto FloodFill( auto x, auto y ) -> void
     {
-        return ( struct Recursion {
+        return ( struct {
             Board& At;
             const Colour Target;
 

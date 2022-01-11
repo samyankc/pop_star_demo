@@ -6,7 +6,7 @@
 
 using std::cout, std::cin;
 // clang-format off
-enum struct Colour : unsigned int { EMPTY, R, G, B, P, Y };
+enum Colour : unsigned int { EMPTY, R, G, B, P, Y };
 // clang-format on
 
 constexpr auto ColumnSize = 10u;
@@ -172,7 +172,7 @@ struct Board : std::array<Column, RowSize>
         {
             cout << y << "| ";
             for( auto x = 0; x < RowSize; ++x )
-                cout << ColourBlock( std::to_underlying( At( x, y ) ) );
+                cout << ColourBlock( At( x, y ) );
             cout << '\n';
         }
 

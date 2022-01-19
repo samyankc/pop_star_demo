@@ -2,7 +2,6 @@
 #include <iostream>
 #include <random>
 #include <vector>
-#include <windows.h>
 
 using std::cout, std::cin;
 // clang-format off
@@ -12,18 +11,9 @@ enum struct Colour : unsigned int { EMPTY, R, G, B, P, Y };
 constexpr auto ColumnSize = 10u;
 constexpr auto RowSize    = 10u;
 
-const static auto hWind = GetStdHandle( STD_OUTPUT_HANDLE );
-struct ColourBlock
+auto ColourBlock(std::underlying_type_t<Colour> RGB)
 {
-    unsigned char RGB : 3;
-    friend std::ostream& operator<<( std::ostream& out, ColourBlock Block )
-    {
-        out << std::flush;
-        SetConsoleTextAttribute( hWind, Block.RGB << 4 );
-        WriteConsole( hWind, "  ", 2, NULL, NULL );
-        SetConsoleTextAttribute( hWind, 0b111 );
-        return out;
-    }
+    return std::data({ "  ", " R", " G", " B", " P", " Y" })[ RGB ];
 };
 
 struct Coordinate
@@ -33,8 +23,8 @@ struct Coordinate
 };
 
 auto RandomInput = [ RandomGenerator = std::mt19937{ std::random_device{}() },
-                     Distribution    = std::uniform_int_distribution<unsigned int>  //
-                     { 0u, std::max( ColumnSize, RowSize ) - 1 } ] mutable          //
+                     Distribution    = std::uniform_int_distribution<Coordinate::member_type>  //
+                     { 0u, std::max( ColumnSize, RowSize ) - 1 } ] mutable                     //
 {
     return Coordinate{ Distribution( RandomGenerator ), Distribution( RandomGenerator ) };
 };
@@ -50,11 +40,12 @@ auto UserInput()
 using Column = std::vector<Colour>;
 struct Board : std::vector<Column>
 {
-    //auto RandomizedSetup()
     Board()
     {
         auto RandomGenerator = std::mt19937{ std::random_device{}() };
-        auto Distribution    = std::uniform_int_distribution<std::underlying_type_t<Colour>>{ std::to_underlying( Colour::R ), std::to_underlying( Colour::Y ) };
+        auto Distribution    = std::uniform_int_distribution<std::underlying_type_t<Colour>>{
+        std::to_underlying( Colour::R ),  //
+        std::to_underlying( Colour::Y ) };
 
         resize( RowSize );
         for( auto& Column : *this )
@@ -76,11 +67,10 @@ struct Board : std::vector<Column>
         return At( x, y ) == Colour::EMPTY;
     }
 
-
-    #define ToRight +1, 0
-    #define ToLeft  -1, 0
-    #define ToAbove 0, +1
-    #define ToBelow 0, -1
+#define ToRight +1, 0
+#define ToLeft  -1, 0
+#define ToAbove 0, +1
+#define ToBelow 0, -1
     template <auto CHECK_LR, auto CHECK_AB>
     auto SafeBound( auto x, auto y ) const
     {
@@ -94,8 +84,7 @@ struct Board : std::vector<Column>
     template <auto CHECK_LR, auto CHECK_AB>
     auto Linked( auto x, auto y ) const
     {
-        return ! Empty( x, y ) &&
-               SafeBound<CHECK_LR, CHECK_AB>( x, y ) &&
+        return ! Empty( x, y ) && SafeBound<CHECK_LR, CHECK_AB>( x, y ) &&
                At( x, y ) == At( x + CHECK_LR, y + CHECK_AB );
     }
 
@@ -104,7 +93,7 @@ struct Board : std::vector<Column>
         auto Result = true;
         for( auto x = 0; x < size(); ++x )
             for( auto y = 0; y < At( x ).size(); ++y )
-                if( Linked<ToAbove>( x, y ) ||
+                if( Linked<ToAbove>( x, y ) ||  //
                     Linked<ToRight>( x, y ) )
                     return false;
         return Result;
@@ -114,17 +103,18 @@ struct Board : std::vector<Column>
     {
         if( Empty( x, y ) ) return true;
 
-        if( Linked<ToAbove>( x, y ) ||
-            Linked<ToBelow>( x, y ) ||
-            Linked<ToRight>( x, y ) ||
-            Linked<ToLeft>( x, y ) ) return false;
+        if( Linked<ToAbove>( x, y ) ||  //
+            Linked<ToBelow>( x, y ) ||  //
+            Linked<ToRight>( x, y ) ||  //
+            Linked<ToLeft>( x, y ) )
+            return false;
         return true;
     }
 
     auto Validate( auto Input ) const
     {
         auto NextMove = Input();
-        while( Isolated( NextMove.x, NextMove.y ) )
+        while( Isolated( NextMove.x, NextMove.y ) )  //
             NextMove = Input();
         return NextMove;
     }
@@ -169,8 +159,7 @@ struct Board : std::vector<Column>
         cout << "    _ _ _ _ _ _ _ _ _ _\n   ";
         for( auto x = 0; x < RowSize; ++x ) cout << " " << x;
 
-        cout << '\n'
-             << std::endl;
+        cout << '\n' << std::endl;
     }
 
     auto MainLoop()
@@ -179,20 +168,20 @@ struct Board : std::vector<Column>
         {
             ColouredDisplay();
             auto [ x, y ] = Validate( RandomInput );
-            //auto [ x, y ] = Validate( UserInput );
+            // auto [ x, y ] = Validate( UserInput );
             StrikeOut( x, y );
         }
         ColouredDisplay();
-        //cin.ignore();
+        // cin.ignore();
         return 1;
     }
 };
 
-static auto disable_stdio_sync = [] {
+static auto disable_stdio_sync = [] {  //
     return std::ios_base::sync_with_stdio( false );
 }();
 
-int main()
+int main()  //
 {
     return Board{}.MainLoop();
 }

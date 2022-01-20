@@ -4,17 +4,12 @@
 #include <vector>
 
 using std::cout, std::cin;
-// clang-format off
 enum struct Colour : unsigned int { EMPTY, R, G, B, P, Y };
-// clang-format on
 
 constexpr auto ColumnSize = 10u;
 constexpr auto RowSize    = 10u;
 
-auto ColourBlock(std::underlying_type_t<Colour> RGB)
-{
-    return std::data({ "  ", " R", " G", " B", " P", " Y" })[ RGB ];
-};
+auto ColourBlock( auto RGB ) { return std::data( { "  ", " R", " G", " B", " P", " Y" } )[ RGB ]; };
 
 struct Coordinate
 {
@@ -142,8 +137,9 @@ struct Board : std::vector<Column>
     auto StrikeOut( auto x, auto y )
     {
         FloodFill( x, y );
-        for( auto& EachCol : *this ) std::erase( EachCol, Colour::EMPTY );  // ColumnShrink
-        std::erase_if( *this, std::empty<Column> );                         // RowShrink
+        for( auto& EachCol : *this )                 //
+            std::erase( EachCol, Colour::EMPTY );    // ColumnShrink
+        std::erase_if( *this, std::empty<Column> );  // RowShrink
     }
 
     auto ColouredDisplay() const
@@ -172,7 +168,6 @@ struct Board : std::vector<Column>
             StrikeOut( x, y );
         }
         ColouredDisplay();
-        // cin.ignore();
         return 1;
     }
 };
